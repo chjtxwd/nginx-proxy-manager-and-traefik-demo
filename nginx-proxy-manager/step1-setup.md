@@ -14,7 +14,7 @@ services:
       - ./letsencrypt:/etc/letsencrypt
 ```
 ## 2. Proxy Hosts
-
+![avatar](https://raw.githubusercontent.com/chjtxwd/nginx-proxy-manager-and-traefik-demo/main/nginx-proxy-manager/nginx-proxy-manager.png)
 ## 3. Redirection Hosts
 ## 4. 404 Hosts
 ## 5. Access Lists
