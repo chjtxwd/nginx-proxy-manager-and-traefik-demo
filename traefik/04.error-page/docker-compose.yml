@@ -1,0 +1,54 @@
+version: "3.3"
+
+services:
+
+  traefik:
+    image: "traefik:v2.6"
+    container_name: "traefik"
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.myresolver.acme.email=chjtxwd@vip.qq.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+# Add the whoami service
+  whoami:
+    image: "traefik/whoami"
+    container_name: "simple-service"
+    labels:
+      - "traefik.enable=true"
+      # Routers
+      - "traefik.http.routers.whoami.rule=Host(`jp2.haijin666.site`)"
+      - "traefik.http.routers.whoami.entrypoints=websecure"
+      - "traefik.http.routers.whoami.tls.certresolver=myresolver"
+        # add middleware test-auth test-errorpages in router
+      - "traefik.http.routers.whoami.middlewares=test-auth,test-errorpages"
+      # Middleware
+        # Middleware BasicAuth account demo , passsword demo
+      - "traefik.http.middlewares.test-auth.basicauth.users=demo:$$apr1$$04km8nef$$K1YiG1lcczUIvUeJiWoQl/"
+       # Error Pages Middleware
+      - "traefik.http.middlewares.test-errorpages.errors.status=400-599"
+      - "traefik.http.middlewares.test-errorpages.errors.service=error-root"
+      - "traefik.http.middlewares.test-errorpages.errors.query=/{status}.html"
+
+# Add the error service
+  error:
+     image: mikesir87/cats:1.0
+     labels:
+       - "traefik.enable=true"
+  # Routers
+       - "traefik.http.routers.error.rule=Host(`jp2.haijin666.site`)"
+       - "traefik.http.routers.error.entrypoints=websecure"
